@@ -1,12 +1,9 @@
 import streamlit as st
 import base64
 
-# Page config
 st.set_page_config(page_title="PDF Viewer", layout="centered")
-
 st.title("📄 PDF Uploader, Viewer & Downloader")
 
-# Upload PDF
 uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
 if uploaded_file is not None:
@@ -21,9 +18,11 @@ if uploaded_file is not None:
         mime="application/pdf"
     )
 
-    # --- Display PDF ---
+    # --- Display PDF (safe way) ---
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="500" type="application/pdf"></iframe>'
+    pdf_display = f"""
+    <embed src="data:application/pdf;base64,{base64_pdf}" width="700" height="500" type="application/pdf">
+    """
     st.markdown(pdf_display, unsafe_allow_html=True)
 else:
     st.info("👆 Upload a PDF to view and download it.")
