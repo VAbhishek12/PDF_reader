@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+import base64
 
 st.set_page_config(page_title="PDF Viewer", layout="wide")
 st.title("📄 PDF Uploader, Viewer & Downloader")
@@ -7,26 +7,22 @@ st.title("📄 PDF Uploader, Viewer & Downloader")
 uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
 if uploaded_file is not None:
-    # Save uploaded file temporarily
-    with open("temp.pdf", "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Read PDF as bytes
+    pdf_bytes = uploaded_file.read()
 
-    # Show download button
+    # --- Download button ---
     st.download_button(
         label="⬇️ Download PDF",
-        data=uploaded_file.getvalue(),
+        data=pdf_bytes,
         file_name=uploaded_file.name,
         mime="application/pdf"
     )
 
-    # Embed PDF.js to display the file
-    pdf_viewer = f"""
-    <iframe
-        src="https://mozilla.github.io/pdf.js/web/viewer.html?file=temp.pdf"
-        width="100%" height="600"
-        style="border: none;"
-    ></iframe>
+    # --- PDF Preview (base64 embedding works on Streamlit Cloud + Chrome) ---
+    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+    pdf_display = f"""
+    <iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf"></iframe>
     """
-    st.markdown(pdf_viewer, unsafe_allow_html=True)
+    st.markdown(pdf_display, unsafe_allow_html=True)
 else:
     st.info("👆 Upload a PDF to view and download it.")
