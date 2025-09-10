@@ -1,33 +1,32 @@
 import streamlit as st
-import base64
+import os
 
 st.set_page_config(page_title="PDF Viewer", layout="wide")
-st.title("📄 PDF Upload, Preview & Download")
+st.title("📄 PDF Uploader, Viewer & Downloader")
 
-uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
+uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
 if uploaded_file is not None:
-    # Read PDF and encode in base64
-    pdf_bytes = uploaded_file.read()
-    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+    # Save uploaded file temporarily
+    with open("temp.pdf", "wb") as f:
+        f.write(uploaded_file.getbuffer())
 
-    # Embed PDF.js viewer (more reliable than Chrome's preview)
-    pdf_display = f"""
-        <iframe
-            src="https://mozilla.github.io/pdf.js/web/viewer.html?file=data:application/pdf;base64,{base64_pdf}"
-            width="100%" height="600"
-            style="border: none;"
-        ></iframe>
-    """
-    st.components.v1.html(pdf_display, height=600, scrolling=True)
-
-    # Reset file pointer for download
-    uploaded_file.seek(0)
-
-    # Download button
+    # Show download button
     st.download_button(
-        label="📥 Download PDF",
-        data=pdf_bytes,
+        label="⬇️ Download PDF",
+        data=uploaded_file.getvalue(),
         file_name=uploaded_file.name,
         mime="application/pdf"
     )
+
+    # Embed PDF.js to display the file
+    pdf_viewer = f"""
+    <iframe
+        src="https://mozilla.github.io/pdf.js/web/viewer.html?file=temp.pdf"
+        width="100%" height="600"
+        style="border: none;"
+    ></iframe>
+    """
+    st.markdown(pdf_viewer, unsafe_allow_html=True)
+else:
+    st.info("👆 Upload a PDF to view and download it.")
